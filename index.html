@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>pearlspearlspearls</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background-color: #5E5DF0;
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100vh;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    #title {
+      position: absolute;
+      top: 20px;
+      font-size: 2.5em;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.9);
+      text-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    #search-container {
+      width: 80%;
+      max-width: 600px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+      animation: fadeIn 1s ease-in-out;
+    }
+
+    #search-bar {
+      width: 100%;
+      padding: 15px 20px;
+      font-size: 1.2em;
+      border-radius: 30px;
+      border: none;
+      outline: none;
+      background: #f5f5f5;
+      color: #333;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    #search-bar:focus {
+      transform: scale(1.05);
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    #autocomplete-list {
+      width: 100%;
+      background: #ffffff;
+      color: #333;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    #autocomplete-list li {
+      padding: 12px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    #autocomplete-list li:hover {
+      background-color: #2563eb;
+      color: white;
+    }
+
+    .chart-container {
+      display: none;
+      margin-top: 20px;
+      width: 100%;
+      max-width: 800px;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 15px;
+      backdrop-filter: blur(15px);
+      box-shadow: 0px 6px 20px rgba(0, 0, 0, 0.3);
+      color: white;
+      text-align: left;
+      position: relative;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+
+    .chart-container.active {
+      display: block;
+      opacity: 1;
+      transform: translateY(0);
+      animation: popIn 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+    }
+
+    @keyframes popIn {
+      0% {
+        opacity: 0;
+        transform: scale(0.8) translateY(20px);
+      }
+      70% {
+        opacity: 0.7;
+        transform: scale(1.05) translateY(-5px);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    .chart-container h2 {
+      font-size: 1.8em;
+      margin: 5px 0;
+    }
+
+    .chart-container p {
+      margin: 5px 0;
+    }
+
+    .chart-container p strong {
+      font-weight: 600;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .toggle-button {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      background: #4caf50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 5px 10px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      display: none;
+    }
+
+    .toggle-button:hover {
+      background: #45a049;
+    }
+
+    .main-info, .dropdown {
+      transition: all 0.5s ease-in-out, opacity 0.5s ease-in-out;
+    }
+
+    .dropdown {
+      margin-top: 15px;
+      padding: 10px;
+      background: #ffffff;
+      color: #333;
+      border-radius: 5px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      display: none;
+      opacity: 0;
+      max-height: 0;
+      overflow: hidden;
+    }
+
+    .dropdown.active {
+      display: block;
+      opacity: 1;
+      max-height: 500px;
+    }
+
+    .dropdown select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 1em;
+      margin-bottom: 10px;
+    }
+
+    .main-info {
+      display: block;
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .main-info.hidden {
+      opacity: 0;
+      transform: translateY(20px);
+      max-height: 0;
+      overflow: hidden;
+    }
+
+    #dosing-details p {
+      margin: 10px 0;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div id="title">hello world</div>
+
+  <div id="search-container">
+    <input id="search-bar" type="text" placeholder="search for a drug or a bug :D">
+    <ul id="autocomplete-list"></ul>
+  </div>
+
+  <div class="chart-container" id="info-chart">
+    <h2 id="item-name"></h2>
+    <div class="main-info" id="main-info">
+      <p id="item-class"></p>
+      <p id="item-details"></p>
+    </div>
+    <button class="toggle-button" id="toggle-dosing">Dosing</button>
+    <div class="dropdown" id="dosing-info">
+      <label for="indication">Select Indication:</label>
+      <select id="indication">
+        <option value="uti">Urinary Tract Infection</option>
+        <option value="sepsis">Sepsis</option>
+        <option value="meningitis">Meningitis</option>
+      </select>
+      
+      <div id="dosing-details">
+        <p>Select an indication to view dosing information</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const data = [
+      {
+        type: 'Bug',
+        name: "Escherichia Coli",
+        class: "Gram-Negative Rod",
+        infections: "UTIs, sepsis, intra-abdominal infections",
+        sensitivity: "Ceftriaxone, Meropenem"
+      },
+      {
+        type: 'Bug',
+        name: "Staphylococcus Aureus",
+        class: "Gram-Positive Cocci (Clusters)",
+        infections: "Skin infections, pneumonia, sepsis",
+        sensitivity: "Vancomycin, Daptomycin"
+      },
+      {
+        type: 'Drug',
+        name: "Vancomycin",
+        brandName: "Vancocin®",
+        class: "Glycopeptide",
+        details: {
+          indications: "Treats Gram-positive infections",
+          moa: "Inhibits bacterial cell wall synthesis",
+          spectrum: "Effective against MRSA, Gram-positive bacteria",
+          sideEffects: "Nephrotoxicity, Red Man Syndrome",
+          contraindications: "Allergy to vancomycin"
+        },
+        dosing: {
+          uti: {
+            adult: "15 mg/kg every 12 hours",
+            renal_adjustment: "Reduce dose in renal impairment",
+          },
+          sepsis: {
+            adult: "25-30 mg/kg every 8-12 hours",
+            renal_adjustment: "Adjust dose based on creatinine clearance",
+          },
+          meningitis: {
+            adult: "30 to 45 mg/kg/day IV divided every 8 to 12 hours; serum trough concentration 15 to 20 mcg/mL (10 to 14 mcmol/L)",
+            renal_adjustment: "15 mg/kg initially and then optimize dose and interval based on serum drug concentrations",
+          }
+        }
+      },
+      {
+        type: 'Drug',
+        name: "Fluconazole",
+        brandName: "Diflucan®",
+        class: "Azole Antifungal",
+        details: {
+          indications: "Treats fungal infections",
+          moa: "Inhibits fungal ergosterol synthesis",
+          spectrum: "Covers Candida species",
+          sideEffects: "Hepatotoxicity, rash",
+          contraindications: "Allergy to azoles, pregnancy"
+        }
+      }
+    ];
+
+    const searchBar = document.getElementById('search-bar');
+    const autocompleteList = document.getElementById('autocomplete-list');
+    const infoChart = document.getElementById('info-chart');
+    const itemName = document.getElementById('item-name');
+    const itemClass = document.getElementById('item-class');
+    const itemDetails = document.getElementById('item-details');
+    const mainInfo = document.getElementById('main-info');
+    const dosingInfo = document.getElementById('dosing-info');
+    const toggleButton = document.getElementById('toggle-dosing');
+    const indicationSelect = document.getElementById('indication');
+
+    searchBar.addEventListener('input', () => {
+      const query = searchBar.value.toLowerCase();
+      autocompleteList.innerHTML = '';
+
+      if (query.length > 0) {
+        const matchedItems = data.filter(item => item.name.toLowerCase().startsWith(query));
+
+        matchedItems.forEach(item => {
+          const listItem = document.createElement('li');
+          listItem.textContent = `${item.type}: ${item.name}`;
+
+          listItem.addEventListener('click', () => {
+            displayItemInfo(item);
+          });
+
+          autocompleteList.appendChild(listItem);
+        });
+      }
+    });
+
+    const displayItemInfo = (item) => {
+
+      infoChart.classList.remove('active');
+      
+      
+      autocompleteList.innerHTML = '';
+      searchBar.value = item.name;
+
+      
+      setTimeout(() => {
+        mainInfo.classList.remove('hidden');
+        dosingInfo.classList.remove('active');
+        toggleButton.textContent = 'Dosing';
+        toggleButton.style.display = item.type === 'Drug' ? 'block' : 'none';
+
+        
+        itemName.textContent = item.type === 'Drug' 
+          ? `${item.name} (${item.brandName})` 
+          : item.name;
+
+        itemClass.textContent = `Class: ${item.class}`;
+        
+        itemDetails.innerHTML = item.details
+          ? `<strong>Indications:</strong> ${item.details.indications}<br>
+             <strong>MOA:</strong> ${item.details.moa}<br>
+             <strong>Spectrum:</strong> ${item.details.spectrum}<br>
+             <strong>Side Effects:</strong> ${item.details.sideEffects}<br>
+             <strong>Contraindications:</strong> ${item.details.contraindications}`
+          : `<strong>Associated Infections:</strong> ${item.infections}<br>
+             <strong>Sensitivity:</strong> ${item.sensitivity}`;
+
+        if (item.dosing) {
+          indicationSelect.addEventListener('change', () => {
+            const selectedIndication = indicationSelect.value;
+            const dosingInfo = item.dosing[selectedIndication];
+            if (dosingInfo) {
+              const dosingDetailsHTML = `
+                <p><strong>Adult Dosing:</strong> ${dosingInfo.adult || 'No specific adult dosing information'}</p>
+                <p><strong>Renal Adjustment:</strong> ${dosingInfo.renal_adjustment || 'Not Applicable'}</p>
+              `;
+
+              document.getElementById('dosing-details').innerHTML = dosingDetailsHTML;
+            }
+          });
+          indicationSelect.dispatchEvent(new Event('change'));
+        }
+
+        infoChart.style.display = 'block';
+        infoChart.classList.add('active');
+      }, 50);
+    };
+
+    toggleButton.addEventListener('click', () => {
+      if (dosingInfo.classList.contains('active')) {
+        dosingInfo.classList.remove('active');
+        mainInfo.classList.remove('hidden');
+        toggleButton.textContent = 'Dosing';
+      } else {
+        dosingInfo.classList.add('active');
+        mainInfo.classList.add('hidden');
+        toggleButton.textContent = 'Back';
+      }
+    });
+  </script>
+</body>
+</html>
